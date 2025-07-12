@@ -1,0 +1,123 @@
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import java.awt.*;
+import java.awt.event.*;
+import java.util.ArrayList;
+
+public class BookManager extends JFrame {
+    private JTable table;
+    private DefaultTableModel model;
+    private JTextField titleField, authorField;
+    private ArrayList<Book> bookList = new ArrayList<>();
+
+    public BookManager() {
+        setTitle("Manajemen Daftar Buku");
+        setSize(600, 400);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
+        setLayout(new BorderLayout());
+
+        // Tabel
+        model = new DefaultTableModel(new String[]{"Judul", "Penulis"}, 0);
+        table = new JTable(model);
+        JScrollPane scrollPane = new JScrollPane(table);
+        add(scrollPane, BorderLayout.CENTER);
+
+        // Form input
+        JPanel inputPanel = new JPanel(new GridLayout(3, 2));
+        inputPanel.add(new JLabel("Judul Buku:"));
+        titleField = new JTextField();
+        inputPanel.add(titleField);
+
+        inputPanel.add(new JLabel("Penulis:"));
+        authorField = new JTextField();
+        inputPanel.add(authorField);
+
+        JButton addButton = new JButton("Tambah");
+        JButton updateButton = new JButton("Edit");
+        JButton deleteButton = new JButton("Hapus");
+
+        inputPanel.add(addButton);
+        inputPanel.add(updateButton);
+        add(inputPanel, BorderLayout.NORTH);
+        add(deleteButton, BorderLayout.SOUTH);
+
+        // Action Listener
+        addButton.addActionListener(e -> addBook());
+        updateButton.addActionListener(e -> updateBook());
+        deleteButton.addActionListener(e -> deleteBook());
+        table.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                fillFormFromTable();
+            }
+        });
+    }
+
+    private void addBook() {
+        String title = titleField.getText();
+        String author = authorField.getText();
+        if (!title.isEmpty() && !author.isEmpty()) {
+            Book book = new Book(title, author);
+            bookList.add(book);
+            model.addRow(new Object[]{title, author});
+            clearFields();
+        } else {
+            JOptionPane.showMessageDialog(this, "Mohon isi semua data");
+        }
+    }
+
+    private void updateBook() {
+        int row = table.getSelectedRow();
+        if (row >= 0) {
+            String title = titleField.getText();
+            String author = authorField.getText();
+            if (!title.isEmpty() && !author.isEmpty()) {
+                bookList.set(row, new Book(title, author));
+                model.setValueAt(title, row, 0);
+                model.setValueAt(author, row, 1);
+                clearFields();
+            } else {
+                JOptionPane.showMessageDialog(this, "Mohon isi semua data");
+            }
+        } else {
+            JOptionPane.showMessageDialog(this, "Pilih data yang ingin diedit");
+        }
+    }
+
+    private void deleteBook() {
+        int row = table.getSelectedRow();
+        if (row >= 0) {
+            bookList.remove(row);
+            model.removeRow(row);
+            clearFields();
+        } else {
+            JOptionPane.showMessageDialog(this, "Pilih data yang ingin dihapus");
+        }
+    }
+
+    private void fillFormFromTable() {
+        int row = table.getSelectedRow();
+        if (row >= 0) {
+            titleField.setText(model.getValueAt(row, 0).toString());
+            authorField.setText(model.getValueAt(row, 1).toString());
+        }
+    }
+
+    private void clearFields() {
+        titleField.setText("");
+        authorField.setText("");
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> new BookManager().setVisible(true));
+    }
+}
+
+// Class buku
+class Book {
+    private String title, author;
+    public Book(String title, String author) {
+        this.title = title;
+        this.author = author;
+    }
+}
